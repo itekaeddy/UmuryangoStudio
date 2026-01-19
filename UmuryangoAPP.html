@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestion des Photos - Umuryango Studio</title>
+    <link rel="stylesheet" href="UmuryangoCSS.css">
+</head>
+<body>
+<!-- LOGO -->
+<div class="logo-box">
+    <img src="WhatsApp_Image_2026-01-07_at_11.17.43-removebg-preview.png" alt="Umuryango Studio">
+</div>
+
+<!-- PAGE CONNEXION -->
+<div id="loginPage" class="auth-box">
+    <h2 class="title1">Connexion</h2>
+    <input type="email" id="loginEmail" placeholder="Email">
+    <input type="password" id="loginPassword" placeholder="Mot de passe">
+    <button onclick="login()" class="btn btn-primary">Se connecter</button>
+    <p>Pas encore de compte ?
+        <a href="#" onclick="showRegister()">Inscription employé</a>
+    </p>
+</div>
+
+<!-- PAGE INSCRIPTION -->
+<div id="registerPage" class="auth-box hidden">
+    <h2>Inscription Employé</h2>
+    <input type="text" id="regName" placeholder="Nom complet">
+    <input type="email" id="regEmail" placeholder="Email">
+    <input type="password" id="regPassword" placeholder="Mot de passe">
+    <button onclick="register()">Créer mon compte</button>
+    <p>Déjà inscrit ?
+        <a href="#" onclick="showLogin()">Retour connexion</a>
+    </p>
+</div>
+
+<div id="dashboard" class="hidden">
+ 
+    <p id="roleInfo"></p>
+    <div id="userManagement" class="hidden">
+        <h3>Gestion utilisateurs</h3>
+        <table id="usersTable"></table>
+ 
+</div>
+
+    <div class="container">
+        <header>
+            <img src="WhatsApp Image 2026-01-07 at 11.17.43.jpeg" alt="Umuryango Studio" class="logo">
+            <h1>📸 Système de Gestion de Photos 📸</h1>
+            <p>Gestion centralisée des photos du personnel</p>
+        </header>
+
+        <div class="main-content">
+            <aside class="sidebar">
+                <h2>Ajouter des Photos</h2>
+                <form id="photoForm">
+                    <div class="form-group">
+                        <label for="ownerName">Nom du propriétaire</label>
+                        <input type="text" id="ownerName" placeholder="Ex: Jean Itonde" required>
+                    </div>
+                   <div class="form-group">
+                    <label for="clientNumber">Numéro du client</label>
+                         <input 
+               type="text" 
+               id="clientNumber" 
+               placeholder="Ex: 62 200 000"
+               required
+                      >
+    </div>
+                    <div class="form-group">
+                        <label for="photoCount">Nombre de photos</label>
+                        <input type="number" id="photoCount" min="1" placeholder="Ex: 10" required>
+                    </div>
+
+                    <div class="form-group">
+    <label for="clientAmount">Montant payé (en FBU  )</label>
+    <input type="number" id="clientAmount" min="0" placeholder="Ex: 5000" required>
+</div>
+
+                    <button type="submit" class="btn btn-primary">Ajouter</button>
+                </form>
+
+                <div style="margin-top: 30px;">
+                    <h2>Traiter une Photo</h2>
+                    <form id="processForm">
+                        <div class="form-group">
+                            <label for="processorName">Votre nom</label>
+                            <input type="text" id="processorName" placeholder="Ex: Angel Gatoni " required>
+                        </div>
+                        <div class="form-group">
+                            <label for="photoSelect">Sélectionner photo</label>
+                            <select id="photoSelect" required>
+                                <option value="">Choisir...</option>
+                            </select>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Marquer comme traitée</button>
+                    </form>
+                </div>
+            </aside>
+
+            <main class="content-area">
+                <div class="stats">
+                    <div class="stat-card">
+                        <h3 id="totalPhotos">0</h3>
+                        <p>Total de photos</p>
+
+                        <h3 id="totalArgents">0</h3>
+                        <p>Total d'argents</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3 id="pendingPhotos">0</h3>
+                        <p>Photos non traitées</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3 id="processedPhotos">0</h3>
+                        <p>Photos traitées</p>
+                    </div>
+                </div>
+
+                <div class="tabs">
+                    <button class="tab active" onclick="switchTab('all')">Toutes les photos</button>
+                    <button class="tab" onclick="switchTab('pending')">Non traitées</button>
+                    <button class="tab" onclick="switchTab('processed')">Traitées</button>
+                </div>
+
+                <div id="allPhotos" class="photo-list active"></div>
+                <div id="pendingPhotos" class="photo-list"></div>
+                <div id="processedPhotos" class="photo-list"></div>
+            </main>
+        </div>
+    </div>
+
+    <script src="UmuryangoJAVA.js"></script>
+</div>
+
+<footer>
+    <div class="footer-bottom">
+            <p>&copy; 2026 Umuryango Site. Tous droits reserves.</p>
+    </div>
+</footer>
+</body>
+</html>
