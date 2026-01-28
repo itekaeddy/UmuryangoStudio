@@ -1,12 +1,45 @@
 let photos = [];
 
-// === AUTH SYSTEM ===
-let users = JSON.parse(localStorage.getItem("users")) || [];
-if (!users.find(u => u.email === "gerant@umuryango.com")) {
-    users.push({name:"Gérant",email:"gerant@umuryango.com",password:"admin123",role:"gerant",validated:true});
-    localStorage.setItem("users", JSON.stringify(users));
-}
-let currentUser = JSON.parse(localStorage.getItem("currentUser")) || null;
+// === FIREBASE CONFIG ===
+const firebaseConfig = {
+  apiKey: "AIzaSyD1VJglvZ1zuxnV3YyoPAyWeyR9XNIurv8",
+  authDomain: "umuryango-studiodb.firebaseapp.com",
+  databaseURL: "https://umuryango-studiodb-default-rtdb.firebaseio.com",
+  projectId: "umuryango-studiodb",
+  storageBucket: "umuryango-studiodb.firebasestorage.app",
+  messagingSenderId: "128360607141",
+  appId: "1:128360607141:web:9562ad9f8d8a25f7f28c4c"
+};
+
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
+
+// ================= USERS =================
+let users = [];
+let currentUser = null;
+
+db.ref("users").on("value", snapshot => {
+    const data = snapshot.val();
+
+    // Toujours forcer users comme tableau
+    users = Array.isArray(data) ? data : (data ? Object.values(data) : []);
+
+    // Vérifier si le gérant existe
+    const gerantExiste = users.find(u => u.email === "gerant@umuryango.com");
+
+    if (!gerantExiste) {
+        users.push({
+            name: "Gérant",
+            email: "gerant@umuryango.com",
+            password: "admin123",
+            role: "gerant",
+            validated: true
+        });
+
+        db.ref("users").set(users);
+    }
+});
+
 
 function showRegister(){
     loginPage.classList.add('hidden');
@@ -22,13 +55,11 @@ function register(){
     const name = regName.value;
     const email = regEmail.value;
     const password = regPassword.value;
-    
-    if(users.find(u => u.email === email)) {
-        return alert("Email déjà utilisé");
-    }
-    
+
+    if(users.find(u => u.email === email)) return alert("Email déjà utilisé");
+
     users.push({name, email, password, role:"employe", validated:false});
-    localStorage.setItem("users", JSON.stringify(users));
+    db.ref("users").set(users);
     alert("Compte créé — en attente de validation");
     showLogin();
 }
@@ -37,276 +68,37 @@ function login(){
     const email = loginEmail.value;
     const password = loginPassword.value;
     const user = users.find(u => u.email === email && u.password === password);
-    
+
     if(!user) return alert("Identifiants incorrects");
     if(!user.validated) return alert("Compte non validé");
-    
+
     currentUser = user;
-    localStorage.setItem("currentUser", JSON.stringify(user));
     loadDashboard();
 }
 
 function logout(){
     currentUser = null;
-    localStorage.removeItem("currentUser");
     location.reload();
 }
 
+// ================= DASHBOARD =================
 function loadDashboard(){
     loginPage.classList.add('hidden');
     registerPage.classList.add('hidden');
     dashboard.classList.remove('hidden');
-    
-    roleInfo.innerHTML = `Connecté en tant que : ${currentUser.name} (${currentUser.role}) 
-        <button onclick="logout()" style="display:block; margin:10px auto 0;     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;     width: 20%;
-    padding: 14px;
-    border: none;
-    border-radius: 8px;
-    font-size: 16px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.3s;
-    margin-top: 10px;">
-    Déconnexion
-</button>`;
-    
+
+    roleInfo.innerHTML = `Connecté en tant que : ${currentUser.name} (${currentUser.role})
+    <button onclick="logout()" style="display:block;margin:10px auto 0;">Déconnexion</button>`;
+
     if(currentUser.role === "gerant"){
         userManagement.classList.remove('hidden');
         loadUsersTable();
     }
-    
-    // Charger les photos APRÈS l'authentification
+
     loadPhotos();
 }
 
-function loadUsersTable(){
-    let html = '<tr><th>Nom</th><th>Email</th><th>Rôle</th><th>Validation</th></tr>';
-    users.forEach((u, i) => {
-        html += `<tr>
-            <td>${u.name}</td>
-            <td>${u.email}</td>
-            <td>${u.role}</td>
-            <td>
-                ${u.role === "gerant" ? "—" : `
-                    <button onclick="validateUser(${i})">${u.validated ? "Validé" : "Valider"}</button>
-                    ${u.validated ? `<button onclick="revokeAccess(${i})">Révoquer</button>` : ""}
-                `}
-            </td>
-        </tr>`;
-    });
-    usersTable.innerHTML = html;
-}
-
-function validateUser(i){
-    users[i].validated = true;
-    localStorage.setItem("users", JSON.stringify(users));
-    loadUsersTable();
-}
-
-function revokeAccess(i){
-    if(confirm(`Êtes-vous sûr de vouloir révoquer l'accès de ${users[i].name} ?`)){
-        users[i].validated = false;
-        localStorage.setItem("users", JSON.stringify(users));
-        loadUsersTable();
-    }
-}
-
-// === PHOTO MANAGEMENT ===
-
-function loadPhotos() {
-    const stored = localStorage.getItem('photoManagement');
-    if (stored) {
-        photos = JSON.parse(stored);
-    }
-    updateDisplay();
-}
-
-function savePhotos() {
-    localStorage.setItem('photoManagement', JSON.stringify(photos));
-}
-
-// Initialiser les événements seulement quand le DOM est prêt
-document.addEventListener('DOMContentLoaded', function() {
-    if(document.getElementById('photoForm')) {
-        document.getElementById('photoForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-          const owner = document.getElementById('ownerName').value; 
-          const clientNumber = document.getElementById('clientNumber').value; 
-          const count = parseInt(document.getElementById('photoCount').value);
-          const amount = parseFloat(document.getElementById('clientAmount').value) || 0;
-
-            const newPhoto = {
-                id: Date.now(),
-                clientNumber: clientNumber,   // ✅ AJOUT ICI
-                owner: owner,
-                count: count,
-                amount: amount,      // ✅ Montant payé ajouté
-                status: 'pending',
-                processedBy: null,
-                processedDate: null,
-                addedDate: new Date().toLocaleString('fr-FR')
-            };
-
-            photos.push(newPhoto);
-            savePhotos();
-            updateDisplay();
-
-            document.getElementById('photoForm').reset();
-            alert('Photos ajoutées avec succès !');
-        });
-    }
-
-    if(document.getElementById('processForm')) {
-        document.getElementById('processForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-            const processor = document.getElementById('processorName').value;
-            const photoId = parseInt(document.getElementById('photoSelect').value);
-
-            const photo = photos.find(p => p.id === photoId);
-            if (photo) {
-                photo.status = 'processed';
-                photo.processedBy = processor;
-                photo.processedDate = new Date().toLocaleString('fr-FR');
-                savePhotos();
-                updateDisplay();
-
-                document.getElementById('processForm').reset();
-                alert('Photo marquée comme traitée !');
-            }
-        });
-    }
-    
-    // Charger le dashboard si l'utilisateur est déjà connecté
-    if (currentUser) {
-        loadDashboard();
-    }
-});
-
-function updateDisplay() {
-    const totalCount = photos.reduce((sum, p) => sum + p.count, 0);
-    const pendingCount = photos.filter(p => p.status === 'pending').reduce((sum, p) => sum + p.count, 0);
-    const processedCount = photos.filter(p => p.status === 'processed').reduce((sum, p) => sum + p.count, 0);
-    // ICI le total d'argent
-    const totalMoney = calculerTotalArgent();
-
-    document.getElementById('totalPhotos').textContent = totalCount + " 📸 ";
-    document.getElementById('pendingPhotos').textContent = pendingCount;
-    document.getElementById('processedPhotos').textContent = processedCount;
-    document.getElementById('totalArgents').textContent = totalMoney + " FBU ";
-
-    renderPhotoList('allPhotos', photos);
-    renderPhotoList('pendingPhotos', photos.filter(p => p.status === 'pending'));
-    renderPhotoList('processedPhotos', photos.filter(p => p.status === 'processed'));
-
-    updatePhotoSelect();
-}
-
-function renderPhotoList(containerId, photoList) {
-    const container = document.getElementById(containerId);
-    
-    if (photoList.length === 0) {
-        container.innerHTML = `
-            <div class="empty-state">
-                <svg fill="currentColor" viewBox="0 0 20 20">
-                    <path fill-rule="evenodd" d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z" clip-rule="evenodd"/>
-                </svg>
-                <p>Aucune photo à afficher</p>
-            </div>
-        `;
-        return;
-    }
-
-    container.innerHTML = photoList.map(photo => `
-        <div class="photo-item">
-            <div class="photo-header">
-                <div class="photo-info">
-                    <div class="photo-owner">${photo.owner}</div>
-                       <div class="client-number">Client n° ${photo.clientNumber}</div>
-                    <div class="photo-count">${photo.count} photo${photo.count > 1 ? 's' : ''} • Montant: ${photo.amount} FBU • Ajouté le ${photo.addedDate}</div>
-                </div>
-                <span class="photo-status ${photo.status === 'pending' ? 'status-pending' : 'status-processed'}">
-                    ${photo.status === 'pending' ? '⏳ Non traité' : '✓ Traité'}
-                </span>
-            </div>
-            ${photo.status === 'processed' ? `
-                <div class="processed-by">
-                    <strong>Traité par:</strong> ${photo.processedBy} le ${photo.processedDate}
-                </div>
-            ` : ''}
-            <div class="photo-actions">
-                ${photo.status === 'pending' ? `
-                    <button class="btn-small btn-process" onclick="quickProcess(${photo.id})">Traiter</button>
-                ` : ''}
-                ${currentUser && currentUser.role === "gerant" ? 
-                    `<button class="btn-small btn-delete" onclick="deletePhoto(${photo.id})">Supprimer</button>` 
-                    : ""}
-            </div>
-        </div>
-    `).join('');
-}
-
-function updatePhotoSelect() {
-    const select = document.getElementById('photoSelect');
-    if(!select) return;
-    
-    const pendingPhotos = photos.filter(p => p.status === 'pending');
-    
-    select.innerHTML = '<option value="">Choisir...</option>' + 
-        pendingPhotos.map(p => `<option value="${p.id}">${p.owner} (${p.count} photos)</option>`).join('');
-}
-
-function quickProcess(photoId) {
-    const processor = prompt('Entrez votre nom:');
-    if (processor) {
-        const photo = photos.find(p => p.id === photoId);
-        if (photo) {
-            photo.status = 'processed';
-            photo.processedBy = processor;
-            photo.processedDate = new Date().toLocaleString('fr-FR');
-            savePhotos();
-            updateDisplay();
-        }
-    }
-}
-
-function deletePhoto(photoId) {
-    // Vérifier si l'utilisateur est connecté et est gérant
-    if (!currentUser || currentUser.role !== "gerant") {
-        alert("⛔ Accès refusé : seul le gérant peut supprimer.");
-        return;
-    }
-
-    if (confirm("Êtes-vous sûr de vouloir supprimer cette entrée ?")) {
-        photos = photos.filter(p => p.id !== photoId);
-        savePhotos();
-        updateDisplay();
-        alert("Photo supprimée avec succès !");
-    }
-}
-
-function switchTab(tab) {
-    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-    document.querySelectorAll('.photo-list').forEach(l => l.classList.remove('active'));
-
-    event.target.classList.add('active');
-    document.getElementById(tab + 'Photos').classList.add('active');
-}
-
-document.getElementById("clientNumber").value;
-
-
-function deleteUser(i){
-    if(confirm(`⚠️ ATTENTION !\n\nVoulez-vous SUPPRIMER DÉFINITIVEMENT le compte de ${users[i].name} ?\n\nCette action est irréversible !`)){
-        const userName = users[i].name;
-        users.splice(i, 1);
-        localStorage.setItem("users", JSON.stringify(users));
-        loadUsersTable();
-        alert(`✓ Le compte de ${userName} a été supprimé définitivement.`);
-    }
-}
-
-
+// ================= USERS TABLE =================
 function loadUsersTable(){
     let html = '<tr><th>Nom</th><th>Email</th><th>Rôle</th><th>Validation</th><th>Actions</th></tr>';
     users.forEach((u, i) => {
@@ -322,9 +114,7 @@ function loadUsersTable(){
             </td>
             <td>
                 ${u.role === "gerant" ? "—" : `
-                    <button onclick="deleteUser(${i})" style="background: #D32F2F; color: white; padding: 5px 10px; border: none; border-radius: 4px; cursor: pointer;">
-                          Supprimer
-                    </button>
+                    <button onclick="deleteUser(${i})">Supprimer</button>
                 `}
             </td>
         </tr>`;
@@ -332,24 +122,88 @@ function loadUsersTable(){
     usersTable.innerHTML = html;
 }
 
-function calculerTotalArgent() {
-    let total = 0;
-
-    for (let i = 0; i < photos.length; i++) {
-        total += Number(photos[i].amount) || 0;
-    }
-
-    return total;
+function validateUser(i){
+    users[i].validated = true;
+    db.ref("users").set(users);
+    loadUsersTable();
 }
 
+function revokeAccess(i){
+    if(confirm("Confirmer révocation ?")){
+        users[i].validated = false;
+        db.ref("users").set(users);
+        loadUsersTable();
+    }
+}
 
+function deleteUser(i){
+    if(confirm("Supprimer définitivement ?")){
+        users.splice(i, 1);
+        db.ref("users").set(users);
+        loadUsersTable();
+    }
+}
 
+// ================= PHOTOS =================
+function loadPhotos() {
+    db.ref("photos").on("value", snapshot => {
+        const data = snapshot.val();
+        if (!data) {
+            photos = [];
+        } else {
+            photos = Object.keys(data).map(key => ({
+                firebaseId: key,
+                ...data[key]
+            }));
+        }
+        updateDisplay();
+    });
+}
 
+// ================= EVENTS =================
+document.addEventListener('DOMContentLoaded', function() {
 
+    if(photoForm){
+        photoForm.addEventListener('submit', function(e) {
+            e.preventDefault();
 
+            const newPhoto = {
+                clientNumber: clientNumber.value,
+                owner: ownerName.value,
+                count: parseInt(photoCount.value),
+                amount: parseFloat(clientAmount.value) || 0,
+                status: 'pending',
+                processedBy: null,
+                processedDate: null,
+                addedDate: new Date().toLocaleString('fr-FR')
+            };
 
+            db.ref("photos").push(newPhoto);
+            photoForm.reset();
+        });
+    }
 
+    if(processForm){
+        processForm.addEventListener('submit', function(e){
+            e.preventDefault();
 
+            const photoId = photoSelect.value;
+            const processor = processorName.value;
 
+            db.ref("photos/" + photoId).update({
+                status: "processed",
+                processedBy: processor,
+                processedDate: new Date().toLocaleString('fr-FR')
+            });
 
+            processForm.reset();
+        });
+    }
+});
 
+// ================= UTILS =================
+function calculerTotalArgent() {
+    let total = 0;
+    for (let p of photos) total += Number(p.amount) || 0;
+    return total;
+}
