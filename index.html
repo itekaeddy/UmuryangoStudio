@@ -5,9 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gestion des Photos - Umuryango Studio</title>
     <link rel="stylesheet" href="UmuryangoCSS.css">
+    
+    <!-- Firebase SDK v8 (Compatible) -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
 </head>
 <body>
-
 <!-- LOGO -->
 <div class="logo-box">
     <img src="WhatsApp_Image_2026-01-07_at_11.17.43-removebg-preview.png" alt="Umuryango Studio">
@@ -36,15 +40,14 @@
     </p>
 </div>
 
-<!-- DASHBOARD -->
 <div id="dashboard" class="hidden">
  
     <p id="roleInfo"></p>
-
     <div id="userManagement" class="hidden">
         <h3>Gestion utilisateurs</h3>
         <table id="usersTable"></table>
-    </div>
+ 
+</div>
 
     <div class="container">
         <header>
@@ -61,21 +64,24 @@
                         <label for="ownerName">Nom du propriétaire</label>
                         <input type="text" id="ownerName" placeholder="Ex: Jean Itonde" required>
                     </div>
-
-                    <div class="form-group">
-                        <label for="clientNumber">Numéro du client</label>
-                        <input type="text" id="clientNumber" placeholder="Ex: 62 200 000" required>
-                    </div>
-
+                   <div class="form-group">
+                    <label for="clientNumber">Numéro du client</label>
+                         <input 
+               type="text" 
+               id="clientNumber" 
+               placeholder="Ex: 62 200 000"
+               required
+                      >
+    </div>
                     <div class="form-group">
                         <label for="photoCount">Nombre de photos</label>
                         <input type="number" id="photoCount" min="1" placeholder="Ex: 10" required>
                     </div>
 
                     <div class="form-group">
-                        <label for="clientAmount">Montant payé (en FBU)</label>
-                        <input type="number" id="clientAmount" min="0" placeholder="Ex: 5000" required>
-                    </div>
+    <label for="clientAmount">Montant payé (en FBU  )</label>
+    <input type="number" id="clientAmount" min="0" placeholder="Ex: 5000" required>
+</div>
 
                     <button type="submit" class="btn btn-primary">Ajouter</button>
                 </form>
@@ -85,16 +91,14 @@
                     <form id="processForm">
                         <div class="form-group">
                             <label for="processorName">Votre nom</label>
-                            <input type="text" id="processorName" placeholder="Ex: Angel Gatoni" required>
+                            <input type="text" id="processorName" placeholder="Ex: Angel Gatoni " required>
                         </div>
-
                         <div class="form-group">
                             <label for="photoSelect">Sélectionner photo</label>
                             <select id="photoSelect" required>
                                 <option value="">Choisir...</option>
                             </select>
                         </div>
-
                         <button type="submit" class="btn btn-primary">Marquer comme traitée</button>
                     </form>
                 </div>
@@ -109,12 +113,10 @@
                         <h3 id="totalArgents">0</h3>
                         <p>Total d'argents</p>
                     </div>
-
                     <div class="stat-card">
                         <h3 id="pendingPhotos">0</h3>
                         <p>Photos non traitées</p>
                     </div>
-
                     <div class="stat-card">
                         <h3 id="processedPhotos">0</h3>
                         <p>Photos traitées</p>
@@ -133,20 +135,15 @@
             </main>
         </div>
     </div>
+
+    <!-- Charger le JavaScript Firebase APRÈS Firebase SDK -->
+    <script src="UmuryangoJAVA.js"></script>
 </div>
 
 <footer>
     <div class="footer-bottom">
-        <p>&copy; 2026 Umuryango Site. Tous droits réservés.</p>
+            <p>&copy; 2026 Umuryango Site. Tous droits reserves.</p>
     </div>
 </footer>
-
-<!-- 🔥 Firebase SDK (AJOUTÉ) -->
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
-
-<!-- Ton JS -->
-<script src="UmuryangoJAVA.js"></script>
-
 </body>
 </html>
