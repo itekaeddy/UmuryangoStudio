@@ -27,7 +27,8 @@ auth.onAuthStateChanged(async (user) => {
         if (userDoc.exists) {
             currentUser = { uid: user.uid, ...userDoc.data() };
             
-            if (currentUser.validated) {
+            // Le gérant n'a pas besoin de validation, les employés oui
+            if (currentUser.role === "gerant" || currentUser.validated) {
                 loadDashboard();
             } else {
                 alert("Votre compte n'est pas encore validé par le gérant");
@@ -36,8 +37,10 @@ auth.onAuthStateChanged(async (user) => {
         }
     } else {
         currentUser = null;
-        loginPage.classList.remove('hidden');
-        dashboard.classList.add('hidden');
+        const loginPage = document.getElementById('loginPage');
+        const dashboard = document.getElementById('dashboard');
+        if (loginPage) loginPage.classList.remove('hidden');
+        if (dashboard) dashboard.classList.add('hidden');
     }
 });
 
@@ -401,3 +404,4 @@ function calculerTotalArgent() {
     }
     return total;
 }
+
