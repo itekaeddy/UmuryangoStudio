@@ -139,19 +139,10 @@ async function loadDashboard() {
     registerPage.classList.add('hidden');
     dashboard.classList.remove('hidden');
     
-    document.getElementById('roleInfo').innerHTML = `Connecté en tant que : ${currentUser.name} (${currentUser.role}) 
-        <button onclick="logout()" style="display:block; margin:10px auto 0; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white; width: 20%;
-    padding: 14px;
-    border: none;
-    border-radius: 8px;
-    font-size: 16px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.3s;
-    margin-top: 10px;">
-    Déconnexion
-</button>`;
+document.getElementById('roleInfo').innerHTML = `
+    Connecté en tant que : ${currentUser.name} (${currentUser.role}) 
+    <button onclick="logout()">Déconnexion</button>
+`;
     
     if (currentUser.role === "gerant") {
         document.getElementById('userManagement').classList.remove('hidden');
@@ -404,4 +395,5 @@ function calculerTotalArgent() {
     }
     return total;
 }
+
 
