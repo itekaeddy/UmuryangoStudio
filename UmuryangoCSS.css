@@ -466,7 +466,7 @@ header p {
 }
 
 .client-number {
-    font-size: 30px;
+    font-size: 20px;
     color: #667eea;
     font-weight: 600;
     margin-bottom: 5px;
@@ -886,5 +886,6 @@ select:focus {
         box-shadow: none;
     }
 }       
+
 
 
